@@ -60,7 +60,7 @@ public class ExampleRecordService {
     @Scheduled(fixedRate = 3000) // Every 3 seconds
     public void readRecords() {
         List<ExampleRecord> records = getAllRecords();
-        System.out.println("Reading " + records.size() + " records from database at " + LocalDateTime.now());
+        System.out.println(records.size() + " records found");
        //records.forEach(System.out::println);
     }
     
