@@ -61,10 +61,10 @@ public class ExampleRecordService {
     public void readRecords() {
         List<ExampleRecord> records = getAllRecords();
         System.out.println("Reading " + records.size() + " records from database at " + LocalDateTime.now());
-        records.forEach(System.out::println);
+       //records.forEach(System.out::println);
     }
     
-    @Scheduled(fixedRate = 10000) // Every 10 seconds
+    @Scheduled(fixedRate = 5000) // Every 10 seconds
     public void writeRecord() {
         if (writeEnabled.get()) {
             ExampleRecord record = new ExampleRecord(
