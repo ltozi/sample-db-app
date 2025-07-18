@@ -52,19 +52,23 @@ public class ExampleRecordService {
         try {
             repository.count(); // Simple query to trigger table creation
             System.out.println("Table 'example_records' is ready. Current record count: " + repository.count());
+            List<ExampleRecord> records = getAllRecords();
+            System.out.println(records.size() + " records found at startup");
+
         } catch (Exception e) {
             System.err.println("Error initializing table: " + e.getMessage());
         }
     }
     
-    @Scheduled(fixedRate = 3000) // Every 3 seconds
+    @Scheduled(fixedRate = 500)
     public void readRecords() {
         List<ExampleRecord> records = getAllRecords();
-        System.out.println(records.size() + " records found");
+        if (records.size() % 10 == 0)
+            System.out.println(records.size() + " records found");
        //records.forEach(System.out::println);
     }
     
-    @Scheduled(fixedRate = 5000) // Every 10 seconds
+    @Scheduled(fixedRate = 1000)
     public void writeRecord() {
         if (writeEnabled.get()) {
             ExampleRecord record = new ExampleRecord(
