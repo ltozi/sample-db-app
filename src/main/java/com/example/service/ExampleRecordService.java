@@ -1,7 +1,10 @@
 package com.example.service;
 
+import com.example.component.DataSourceUrlLogger;
 import com.example.model.ExampleRecord;
 import com.example.repository.ExampleRecordRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -13,7 +16,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class ExampleRecordService {
-    
+
+    private static final Logger logger = LoggerFactory.getLogger(DataSourceUrlLogger.class);
+
     @Autowired
     private ExampleRecordRepository repository;
     
@@ -50,10 +55,10 @@ public class ExampleRecordService {
         // This method ensures the table is created if it doesn't exist
         // The table will be created automatically by JPA when the first query is executed
         try {
-            repository.count(); // Simple query to trigger table creation
-            System.out.println("Table 'example_records' is ready. Current record count: " + repository.count());
+            long count = repository.count(); // Simple query to trigger table creation
+            logger.info("Table 'example_records' is ready");
             List<ExampleRecord> records = getAllRecords();
-            System.out.println(records.size() + " records found at startup");
+            logger.info("Records found at startup: {}", records.size());
 
         } catch (Exception e) {
             System.err.println("Error initializing table: " + e.getMessage());
