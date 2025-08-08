@@ -77,8 +77,6 @@ public class ExampleRecordService {
             );
             saveRecord(record);
             System.out.println("Wrote new record: " + record);
-        } else {
-            System.out.println("Writing is disabled at " + LocalDateTime.now());
         }
     }
 }
