@@ -23,6 +23,7 @@ public class ExampleRecordService {
     private ExampleRecordRepository repository;
     
     private final AtomicBoolean writeEnabled = new AtomicBoolean(false);
+    private int lastRecordCount = -1;
     
     public List<ExampleRecord> getAllRecords() {
         return repository.findAll();
@@ -68,8 +69,11 @@ public class ExampleRecordService {
     @Scheduled(fixedRate = 500)
     public void readRecords() {
         List<ExampleRecord> records = getAllRecords();
-        if (records.size() % 10 == 0)
-            System.out.println(records.size() + " records found");
+        int currentCount = records.size();
+        if (currentCount != lastRecordCount) {
+            System.out.println(currentCount + " records found");
+            lastRecordCount = currentCount;
+        }
        //records.forEach(System.out::println);
     }
     
