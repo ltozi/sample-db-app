@@ -23,6 +23,7 @@ public class ExampleRecordService {
     private ExampleRecordRepository repository;
     
     private final AtomicBoolean writeEnabled = new AtomicBoolean(false);
+    private final AtomicBoolean scheduledTasksEnabled = new AtomicBoolean(true);
     private int lastRecordCount = -1;
     
     public List<ExampleRecord> getAllRecords() {
@@ -51,6 +52,16 @@ public class ExampleRecordService {
         return writeEnabled.get();
     }
     
+    public void disableScheduledTasks() {
+        scheduledTasksEnabled.set(false);
+        logger.info("Scheduled tasks disabled");
+    }
+    
+    public void enableScheduledTasks() {
+        scheduledTasksEnabled.set(true);
+        logger.info("Scheduled tasks enabled");
+    }
+    
     @PostConstruct
     public void initializeTable() {
         // This method ensures the table is created if it doesn't exist
@@ -68,24 +79,45 @@ public class ExampleRecordService {
     
     @Scheduled(fixedRate = 500)
     public void readRecords() {
-        List<ExampleRecord> records = getAllRecords();
-        int currentCount = records.size();
-        if (currentCount != lastRecordCount) {
-            System.out.println(currentCount + " records found");
-            lastRecordCount = currentCount;
+        if (!scheduledTasksEnabled.get()) {
+            return;
         }
-       //records.forEach(System.out::println);
+        
+        try {
+            List<ExampleRecord> records = getAllRecords();
+            int currentCount = records.size();
+            if (currentCount != lastRecordCount) {
+                System.out.println(currentCount + " records found");
+                lastRecordCount = currentCount;
+            }
+        } catch (Exception e) {
+            // Silently ignore errors when scheduled tasks are being shut down
+            if (scheduledTasksEnabled.get()) {
+                logger.warn("Error reading records: {}", e.getMessage());
+            }
+        }
     }
     
     @Scheduled(fixedRate = 1000)
     public void writeRecord() {
-        if (writeEnabled.get()) {
-            ExampleRecord record = new ExampleRecord(
-                "Record " + System.currentTimeMillis(),
-                "Value " + System.currentTimeMillis()
-            );
-            saveRecord(record);
-            System.out.println("Wrote new record: " + record);
+        if (!scheduledTasksEnabled.get()) {
+            return;
+        }
+        
+        try {
+            if (writeEnabled.get()) {
+                ExampleRecord record = new ExampleRecord(
+                    "Record " + System.currentTimeMillis(),
+                    "Value " + System.currentTimeMillis()
+                );
+                saveRecord(record);
+                System.out.println("Wrote new record: " + record);
+            }
+        } catch (Exception e) {
+            // Silently ignore errors when scheduled tasks are being shut down
+            if (scheduledTasksEnabled.get()) {
+                logger.warn("Error writing record: {}", e.getMessage());
+            }
         }
     }
 }

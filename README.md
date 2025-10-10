@@ -28,3 +28,12 @@ mvn spring-boot:run -Dspring-boot.run.profiles=rds
 ```shell
 curl -X POST http://localhost:9191/api/toggle-writing
 ```
+
+
+### Drop example_records when finished
+
+You can drop the table by simply running the app with this attribute set to true in application properties.
+
+```properties
+app.drop-table-and-exit=true
+```
