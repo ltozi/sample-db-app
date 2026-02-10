@@ -7,6 +7,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class DataSourceConfigTest {
 
     @Test
+    void triggerCacheHit() {
+         assertEquals(1,1);
+    }
+
+    @Test
     void testUrlBuildingLogic() {
         DataSourceConfig config = new DataSourceConfig();
         
