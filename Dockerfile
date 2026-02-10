@@ -1,28 +1,38 @@
 # Build stage
 FROM maven:3.9-eclipse-temurin-17 AS build
-
 WORKDIR /app
 
-# Copy only dependency files first - these change less frequently
+# 1. Copy POM files
 COPY pom.xml .
 
-# Download dependencies - this layer will be cached unless pom.xml changes
-RUN --mount=type=cache,target=/root/.m2 mvn dependency:resolve-plugins dependency:resolve -B
+# 2. Aggressive Dependency Download (Cache Mount + Offline Prep)
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn dependency:go-offline dependency:resolve-plugins -B
 
-# Copy source code - this changes more frequently
+# 3. Copy source code
 COPY src ./src
 
-# Build the application
+# 4. Build (Offline)
 RUN --mount=type=cache,target=/root/.m2 mvn package -B -o -DskipTests
 
-# Runtime stage
-FROM eclipse-temurin:17-jre
+# Optimizer stage: Extracts JAR layers using layertools
+FROM eclipse-temurin:17-jre AS optimizer
+WORKDIR /app
+# Copy the built jar from the build stage
+COPY --from=build /app/target/*.jar app.jar
+# Extract the layers into directories
+RUN java -Djarmode=layertools -jar app.jar extract
 
+# Final stage: Minimal runtime image
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Copy the built artifact from build stage
-COPY --from=build /app/target/*.jar app.jar
+# 5. Copy extracted layers from the optimizer stage
+# Ordered by frequency of change (rarely -> frequently)
+COPY --from=optimizer /app/dependencies/ ./
+COPY --from=optimizer /app/spring-boot-loader/ ./
+COPY --from=optimizer /app/snapshot-dependencies/ ./
+COPY --from=optimizer /app/application/ ./
 
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
