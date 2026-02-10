@@ -1,21 +1,28 @@
-# Stage 1: Cache Maven dependencies (changes only if pom.xml changes)
-FROM maven:3.9.10-eclipse-temurin-17 AS dependencies
-WORKDIR /build
+# Build stage
+FROM maven:3.9-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+# Copy only dependency files first - these change less frequently
 COPY pom.xml .
+
+# Download dependencies - this layer will be cached unless pom.xml changes
 RUN mvn dependency:go-offline -B
 
-# Stage 2: Build the app (reuses deps cache; rebuilds only if src changes)
-FROM dependencies AS build
-WORKDIR /build
+# Copy source code - this changes more frequently
 COPY src ./src
+
+# Build the application
 RUN mvn package -B -DskipTests
 
-# Stage 3: Runtime image (slim JRE Alpine, ~120MB final size)
-FROM eclipse-temurin:17-jre-alpine AS runtime
+# Runtime stage
+FROM eclipse-temurin:17-jre
+
 WORKDIR /app
-RUN addgroup -g 1001 -S appuser && \
-    adduser -S appuser -u 1001 -G appuser
-COPY --from=build /build/target/*.jar app.jar
+
+# Copy the built artifact from build stage
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
-USER appuser
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
