@@ -33,4 +33,4 @@ jobs:
           push: false
           tags: ghcr.io/ltozi/sample-db-app:latest
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min
