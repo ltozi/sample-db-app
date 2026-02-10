@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline dependency:res
 COPY src ./src
 
 # Build the application
-RUN --mount=type=cache,target=/root/.m2 package -B -o -DskipTests
+RUN --mount=type=cache,target=/root/.m2 mvn package -B -o -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:17-jre
