@@ -7,7 +7,7 @@ WORKDIR /app
 COPY pom.xml .
 
 # Download dependencies - this layer will be cached unless pom.xml changes
-RUN mvn dependency:go-offline dependency:resolve-plugins -B
+RUN mvn dependency:go-offline dependency:resolve-plugins dependency:resolve -B
 
 # Copy source code - this changes more frequently
 COPY src ./src
