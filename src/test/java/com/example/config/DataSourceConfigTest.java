@@ -13,22 +13,22 @@ class DataSourceConfigTest {
         // Test URL without existing parameters
         String originalUrl = "jdbc:postgresql://localhost:5432/testdb";
         String result = invokePrivateMethod(config, originalUrl, "myapp");
-        assertEquals("jdbc:postgresql://localhost:5432/testdb?ApplicationProperties=myapp", result);
+        assertEquals("jdbc:postgresql://localhost:5432/testdb?ApplicationName=myapp", result);
         
         // Test URL with existing parameters
         originalUrl = "jdbc:postgresql://localhost:5432/testdb?ssl=true";
         result = invokePrivateMethod(config, originalUrl, "myapp");
-        assertEquals("jdbc:postgresql://localhost:5432/testdb?ssl=true&ApplicationProperties=myapp", result);
+        assertEquals("jdbc:postgresql://localhost:5432/testdb?ssl=true&ApplicationName=myapp", result);
         
-        // Test URL with existing ApplicationProperties parameter
-        originalUrl = "jdbc:postgresql://localhost:5432/testdb?ApplicationProperties=oldvalue&ssl=true";
+        // Test URL with existing ApplicationName parameter
+        originalUrl = "jdbc:postgresql://localhost:5432/testdb?ApplicationName=oldvalue&ssl=true";
         result = invokePrivateMethod(config, originalUrl, "newvalue");
-        assertEquals("jdbc:postgresql://localhost:5432/testdb?ApplicationProperties=newvalue&ssl=true", result);
+        assertEquals("jdbc:postgresql://localhost:5432/testdb?ApplicationName=newvalue&ssl=true", result);
         
         // Test edge cases
-        originalUrl = "jdbc:postgresql://localhost:5432/testdb?ApplicationProperties=oldvalue";
+        originalUrl = "jdbc:postgresql://localhost:5432/testdb?ApplicationName=oldvalue";
         result = invokePrivateMethod(config, originalUrl, "newvalue");
-        assertEquals("jdbc:postgresql://localhost:5432/testdb?ApplicationProperties=newvalue", result);
+        assertEquals("jdbc:postgresql://localhost:5432/testdb?ApplicationName=newvalue", result);
     }
     
     @Test
