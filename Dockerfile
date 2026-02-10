@@ -7,13 +7,13 @@ WORKDIR /app
 COPY pom.xml .
 
 # Download dependencies - this layer will be cached unless pom.xml changes
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:go-offline dependency:resolve-plugins -B
 
 # Copy source code - this changes more frequently
 COPY src ./src
 
 # Build the application
-RUN mvn package -B -DskipTests
+RUN mvn package -B -o -DskipTests
 
 # Runtime stage
 FROM eclipse-temurin:17-jre
