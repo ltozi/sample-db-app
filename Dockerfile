@@ -6,14 +6,13 @@ WORKDIR /app
 COPY pom.xml .
 
 # 2. Aggressive Dependency Download (Cache Mount + Offline Prep)
-RUN --mount=type=cache,target=/root/.m2 \
-    mvn dependency:go-offline dependency:resolve-plugins -B
+RUN mvn dependency:go-offline dependency:resolve-plugins dependency:resolve -B
 
 # 3. Copy source code
 COPY src ./src
 
 # 4. Build (Offline)
-RUN --mount=type=cache,target=/root/.m2 mvn package -B -o -DskipTests
+RUN mvn package -B -o -DskipTests
 
 # Optimizer stage: Extracts JAR layers using layertools
 FROM eclipse-temurin:17-jre AS optimizer
