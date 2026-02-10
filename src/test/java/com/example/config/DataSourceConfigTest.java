@@ -8,7 +8,7 @@ class DataSourceConfigTest {
 
     @Test
     void triggerCacheHit() {
-         assertEquals(1,1);
+        System.out.println("Trigger cache hit");
     }
 
     @Test
