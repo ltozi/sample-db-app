@@ -10,13 +10,13 @@ COPY pom.xml .
 
 # 2. Download dependencies (this layer will be cached!)
 # Remove the cache mount - we want this in a layer instead
-RUN mvn dependency:go-offline dependency:resolve-plugins -B
+RUN --mount=type=cache,target=/root/.m2/repository mvn dependency:go-offline dependency:resolve-plugins -B
 
 # 3. Copy source code (only this layer invalidates when code changes)
 COPY src ./src
 
 # 4. Build the application
-RUN mvn package -B -DskipTests
+RUN --mount=type=cache,target=/root/.m2/repository mvn package -B -DskipTests
 
 # Optimizer stage: Extracts JAR layers using layertools
 FROM eclipse-temurin:17-jre AS optimizer
