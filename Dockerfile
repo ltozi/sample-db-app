@@ -21,7 +21,7 @@ WORKDIR /app
 # Copy the built jar from the build stage
 COPY --from=build /app/target/*.jar app.jar
 # Extract the layers into directories
-RUN java -Djarmode=layertools -jar app.jar extract
+RUN java -Djarmode=tools extract --layers --launcher
 
 # Final stage: Minimal runtime image
 FROM eclipse-temurin:17-jre
