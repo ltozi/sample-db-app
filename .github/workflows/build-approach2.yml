@@ -1,9 +1,7 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Image (Approach 2 - Hybrid Caching)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
@@ -32,5 +30,9 @@ jobs:
           context: .
           push: false
           tags: ghcr.io/ltozi/sample-db-app:latest
+          # Use GitHub Actions cache for both layer AND cache mounts
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          # Important: This helps preserve cache mount state
+          build-contexts: |
+            maven-cache=docker-image://maven:3.9-eclipse-temurin-17
