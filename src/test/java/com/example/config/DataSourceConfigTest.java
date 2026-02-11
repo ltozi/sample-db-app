@@ -10,6 +10,7 @@ class DataSourceConfigTest {
     void triggerCacheHit() {
         System.out.println("Trigger cache hit 2");
         System.out.println("Trigger cache hit 3");
+        System.out.println("Trigger cache hit 4");
     }
 
     @Test
