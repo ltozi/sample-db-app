@@ -11,6 +11,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
       # 1. Restore the .m2 folder from GitHub cache based on pom.xml hash
       - name: Cache Maven packages
         uses: actions/cache@v4
@@ -22,16 +28,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
+      # 2. Populate .m2 folder on the HOST runner
+      - name: Resolve Maven dependencies (Host)
+        run: mvn dependency:go-offline -B
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 2. Build the image, binding the host .m2 to the container
-      - name: Build and push
+      # 3. Build the image
+      - name: Build
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: false # Set to true to push to a registry
+          push: false
           tags: my-app:latest
-          # Maps the host ~/.m2 folder to /root/.m2 in the container
-          volumes: |
-            ~/.m2:/root/.m2
+          # We don't use volumes here; we rely on BuildKit copying the
+          # host's ~/.m2 if we use mount=type=cache or we use type=local
+          # to point to the host directory.
+          cache-from: type=local,src=~/.m2
+          cache-to: type=local,dest=~/.m2,mode=max
