@@ -42,5 +42,5 @@ jobs:
           push: false
           tags: my-app:latest
           # Use GitHub Actions cache backend for BuildKit
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=build-${{ github.ref_name }}
+          cache-to: type=gha,scope=build-${{ github.ref_name }},mode=max
