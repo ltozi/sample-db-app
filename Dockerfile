@@ -1,21 +1,25 @@
 FROM eclipse-temurin:17-jdk-alpine AS build
 WORKDIR /workspace/app
-COPY mvnw .
-COPY .mvn .mvn
+
+# Copy only pom.xml first for better layer caching
 COPY pom.xml .
 
-RUN ls -lart /Users/freename/.m2/repository || true
+# Use BuildKit cache mount to reuse Maven dependencies across builds
+# This mounts a cache directory that persists between builds
+RUN --mount=type=cache,target=/root/.m2/repository \
+    mvn dependency:go-offline -B || true
 
-# This now uses the volume mounted from the host
-RUN ./mvnw dependency:go-offline
-
+# Copy source code
 COPY src src
-RUN ./mvnw package -DskipTests
+
+# Build the application, reusing cached dependencies
+RUN --mount=type=cache,target=/root/.m2/repository \
+    mvn package -DskipTests -B
 
 # Optimizer stage: Extracts JAR layers using layertools
 FROM eclipse-temurin:17-jre AS optimizer
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /workspace/app/target/*.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
 # Final stage: Minimal runtime image

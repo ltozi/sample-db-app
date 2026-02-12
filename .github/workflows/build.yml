@@ -17,33 +17,29 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 1. Restore the .m2 folder from GitHub cache based on pom.xml hash
+      # Cache Maven packages on GitHub Actions runner
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
-          path: ~/.m2
-          # Primary key uses hash of pom.xml to identify specific dependency sets
+          path: ~/.m2/repository
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          # Restore keys allow loading an older cache if pom.xml changed
           restore-keys: |
             ${{ runner.os }}-m2-
 
-      # 2. Populate .m2 folder on the HOST runner
-      - name: Resolve Maven dependencies (Host)
+      # Pre-download dependencies on the host
+      - name: Download Maven dependencies
         run: mvn dependency:go-offline -B
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 3. Build the image
-      - name: Build
+      # Build the image with BuildKit cache mount
+      - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: false
           tags: my-app:latest
-          # We don't use volumes here; we rely on BuildKit copying the
-          # host's ~/.m2 if we use mount=type=cache or we use type=local
-          # to point to the host directory.
-          cache-from: type=local,src=~/.m2
-          cache-to: type=local,dest=~/.m2,mode=max
+          # Use GitHub Actions cache backend for BuildKit
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
