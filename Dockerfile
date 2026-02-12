@@ -1,22 +1,16 @@
-# APPROACH 1: BEST - Copy .m2 into a layer (not cache mount)
-# This ensures dependencies are cached as Docker layers in GitHub Actions
-
-# Build stage
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /app
-
-# 1. Copy POM file
+FROM eclipse-temurin:17-jdk-alpine AS build
+WORKDIR /workspace/app
+COPY mvnw .
+COPY .mvn .mvn
 COPY pom.xml .
 
-# 2. Download dependencies (this layer will be cached!)
-# Remove the cache mount - we want this in a layer instead
-RUN --mount=type=cache,target=/root/.m2/repository mvn dependency:go-offline dependency:resolve-plugins -B
+RUN ls -lart /Users/freename/.m2/repository || true
 
-# 3. Copy source code (only this layer invalidates when code changes)
-COPY src ./src
+# This now uses the volume mounted from the host
+RUN ./mvnw dependency:go-offline
 
-# 4. Build the application
-RUN --mount=type=cache,target=/root/.m2/repository mvn package -B -DskipTests
+COPY src src
+RUN ./mvnw package -DskipTests
 
 # Optimizer stage: Extracts JAR layers using layertools
 FROM eclipse-temurin:17-jre AS optimizer
