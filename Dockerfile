@@ -6,8 +6,8 @@ COPY pom.xml .
 
 # Use BuildKit cache mount to reuse Maven dependencies across builds
 # This mounts a cache directory that persists between builds
-RUN --mount=type=cache,target=/root/.m2/repository \
-    mvn dependency:go-offline -B || true
+# RUN --mount=type=cache,target=/root/.m2/repository \
+#     mvn dependency:go-offline -B || true
 
 # Copy source code
 COPY src src
