@@ -1,37 +1,25 @@
-FROM maven:3.9-eclipse-temurin-17-alpine AS build
-WORKDIR /workspace/app
+# Stage 1: Dependency Cache
+FROM maven:3.9-eclipse-temurin-17 AS cache
+WORKDIR /app
 
-# Copy only pom.xml first for better layer caching
+# Only copy the pom.xml to leverage Docker layer caching
 COPY pom.xml .
 
-# Use BuildKit cache mount to reuse Maven dependencies across builds
-# This mounts a cache directory that persists between builds
-# RUN --mount=type=cache,target=/root/.m2/repository \
-#     mvn dependency:go-offline -B || true
-
-# Copy source code
-COPY src src
-
-# Build the application, reusing cached dependencies
+# Download dependencies (using -B for batch mode)
+# Option A: Standard Maven (might miss some plugins)
 RUN --mount=type=cache,target=/root/.m2/repository \
-    mvn package -DskipTests -B
+    mvn dependency:go-offline -B
 
-# Optimizer stage: Extracts JAR layers using layertools
-FROM eclipse-temurin:17-jre AS optimizer
-WORKDIR /app
-COPY --from=build /workspace/app/target/*.jar app.jar
-RUN java -Djarmode=layertools -jar app.jar extract
+# Option B: Robust alternative (requires adding the plugin to pom.xml)
+# RUN mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -B
 
-# Final stage: Minimal runtime image
+# Stage 2: Actual Build
+FROM cache AS builder
+COPY src ./src
+# Run the build in OFFLINE mode to ensure no new downloads occur
+RUN mvn package -o -DskipTests
+
+# Stage 3: Final Image
 FROM eclipse-temurin:17-jre
-WORKDIR /app
-
-# Copy extracted layers from the optimizer stage
-# Ordered by frequency of change (rarely -> frequently)
-COPY --from=optimizer /app/dependencies/ ./
-COPY --from=optimizer /app/spring-boot-loader/ ./
-COPY --from=optimizer /app/snapshot-dependencies/ ./
-COPY --from=optimizer /app/application/ ./
-
-EXPOSE 8080
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+COPY --from=builder /app/target/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar"]
