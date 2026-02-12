@@ -7,8 +7,7 @@ COPY pom.xml .
 
 # Download dependencies (using -B for batch mode)
 # Option A: Standard Maven (might miss some plugins)
-RUN --mount=type=cache,target=/root/.m2/repository \
-    mvn dependency:go-offline -B
+RUN mvn dependency:go-offline -B
 
 # Option B: Robust alternative (requires adding the plugin to pom.xml)
 # RUN mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -B
@@ -16,8 +15,7 @@ RUN --mount=type=cache,target=/root/.m2/repository \
 # Stage 2: Actual Build
 FROM cache AS builder
 COPY src ./src
-RUN --mount=type=cache,target=/root/.m2/repository \
-    mvn package -DskipTests -B
+RUN mvn package -DskipTests -B
 
 # Stage 3: Final Image
 FROM eclipse-temurin:17-jre
