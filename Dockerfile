@@ -16,8 +16,8 @@ RUN --mount=type=cache,target=/root/.m2/repository \
 # Stage 2: Actual Build
 FROM cache AS builder
 COPY src ./src
-# Run the build in OFFLINE mode to ensure no new downloads occur
-RUN mvn package -o -DskipTests
+RUN --mount=type=cache,target=/root/.m2/repository \
+    mvn package -DskipTests -B
 
 # Stage 3: Final Image
 FROM eclipse-temurin:17-jre
