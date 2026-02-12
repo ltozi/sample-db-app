@@ -7,7 +7,7 @@ COPY pom.xml .
 
 # Download dependencies (using -B for batch mode)
 # Option A: Standard Maven (might miss some plugins)
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:go-offline -o -B
 
 # Option B: Robust alternative (requires adding the plugin to pom.xml)
 # RUN mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -B
