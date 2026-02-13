@@ -7,9 +7,13 @@ COPY src ./src
 
 COPY .m2/repository /root/.m2/repository
 
+RUN pwd && ls -larth
+RUN mvn clean package -DskipTests -B
+
+RUN pwd && ls -larth
 # Mount Maven's local repo as a cache - persists across builds
-RUN --mount=type=cache,target=/root/.m2/repository,id=mvn-repo \
-    mvn clean package -DskipTests -B
+# RUN --mount=type=cache,target=/root/.m2/repository,id=mvn-repo \
+#     mvn clean package -DskipTests -B
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
