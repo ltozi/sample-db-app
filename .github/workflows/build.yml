@@ -27,9 +27,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-m2-
 
+      - name: Check context
+        run: ls -larth ${{ github.workspace }}
+
       # Pre-download dependencies on the host
       - name: Download Maven dependencies
-        run: mvn dependency:go-offline -B
+        run: mvn dependency:go-offline -B -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
