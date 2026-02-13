@@ -5,6 +5,9 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
+RUN --mount=type=cache,target=/root/.m2/repository,id=mvn-repo \
+    mvn dependency:go-offline -B
+
 # Mount Maven's local repo as a cache - persists across builds
 RUN --mount=type=cache,target=/root/.m2/repository,id=mvn-repo \
     mvn clean package -DskipTests -B
