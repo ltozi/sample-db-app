@@ -6,7 +6,7 @@ COPY pom.xml .
 COPY src ./src
 
 # Mount Maven's local repo as a cache - persists across builds
-RUN --mount=type=cache,target=/root/.m2/repository \
+RUN --mount=type=cache,target=/root/.m2/repository,id=mvn-repo \
     mvn clean package -DskipTests -B
 
 FROM eclipse-temurin:21-jre
