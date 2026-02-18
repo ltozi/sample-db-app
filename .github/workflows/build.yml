@@ -48,4 +48,4 @@ jobs:
           build-contexts: |
             m2cache=${{ github.workspace }}/.m2/repository
           cache-from: type=gha,scope=build-${{ github.ref_name }}
-          cache-to: type=gha,scope=build-${{ github.ref_name }},mode=max
+          cache-to: type=gha,scope=build-${{ github.ref_name }},mode=min
