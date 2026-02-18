@@ -30,9 +30,9 @@ jobs:
       - name: Check context
         run: ls -larth ${{ github.workspace }}
 
-      # Pre-download dependencies on the host
+      # Pre-download dependencies on the host (force snapshot updates)
       - name: Download Maven dependencies
-        run: mvn dependency:go-offline -B -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
+        run: mvn dependency:go-offline -B -U -Dmaven.repo.local=${{ github.workspace }}/.m2/repository
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -44,6 +44,8 @@ jobs:
           context: .
           push: false
           tags: my-app:latest
-          # Use GitHub Actions cache backend for BuildKit
+          # Inject cached m2 as named build context
+          build-contexts: |
+            m2cache=${{ github.workspace }}/.m2/repository
           cache-from: type=gha,scope=build-${{ github.ref_name }}
           cache-to: type=gha,scope=build-${{ github.ref_name }},mode=max

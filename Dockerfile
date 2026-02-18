@@ -2,18 +2,15 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 
+# Copy cached m2 from named context (mounted, not part of build context tarball)
+RUN --mount=type=bind,from=m2cache,target=/tmp/m2cache \
+    cp -r /tmp/m2cache /root/.m2/repository || mkdir -p /root/.m2/repository
+
 COPY pom.xml .
 COPY src ./src
 
-COPY .m2/repository /root/.m2/repository
-
-RUN pwd && ls -larth
-RUN mvn clean package -DskipTests -B
-
-RUN pwd && ls -larth
-# Mount Maven's local repo as a cache - persists across builds
-# RUN --mount=type=cache,target=/root/.m2/repository,id=mvn-repo \
-#     mvn clean package -DskipTests -B
+# Force snapshot updates with -U
+RUN mvn clean package -DskipTests -B -U
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
