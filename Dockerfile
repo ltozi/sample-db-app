@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy cached m2 from named context (mounted, not part of build context tarball)
 RUN --mount=type=bind,from=m2cache,target=/tmp/m2cache \
-    cp -r /tmp/m2cache /root/.m2/repository || mkdir -p /root/.m2/repository
+    mkdir -p /root/.m2 && cp -r /tmp/m2cache /root/.m2/repository
 
 COPY pom.xml .
 COPY src ./src
