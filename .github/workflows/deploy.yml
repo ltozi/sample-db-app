@@ -1,0 +1,16 @@
+name: Deploy (DryRun)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "feature/dev-lake"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Deployment step
+        run: echo "Deploying...dryrun..todo"
